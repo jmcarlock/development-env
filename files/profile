@@ -1,0 +1,6 @@
+export SPARK_HOME=/home/ubuntu/spark
+export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64
+export PYSPARK_PYTHON=python3.6
+export PYSPARK_DRIVER_PYTHON=python3.6
+export PYSPARK_DRIVER_PYTHON_OPTS="/usr/local/bin/jupyter notebook --no-browser"
+export PATH=$PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/home/ubuntu/spark/bin

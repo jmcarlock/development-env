@@ -1,0 +1,244 @@
+---
+
+- hosts: all
+  tasks:
+
+  - name: adding the deadsnakes ppa
+    apt_repository:
+      repo: 'ppa:deadsnakes/ppa'
+      update_cache: yes
+    become: yes
+    become_user: root
+
+  - name: installing python version 3.6
+    apt:
+      name: "python3.6"
+      state: latest
+    become: yes
+    become_user: root
+
+  - name: installing python 3.6 dev headers
+    apt:
+      name: "python3.6-dev"
+      state: latest
+    become: yes
+    become_user: root
+
+  - name: "chowning python3.6 dist packages"
+    file:
+      path: "/usr/local/lib/python3.6/dist-packages"
+      state: directory
+      mode: 0777
+    become: yes
+    become_user: root
+
+  - name: "chowning /usr/local/bin"
+    file:
+      path: "/usr/local/bin"
+      state: directory
+      mode: 0777
+    become: yes
+    become_user: root
+
+  - name: downloading pip installer
+    get_url:
+      url: https://bootstrap.pypa.io/get-pip.py
+      dest: /tmp/get-pip.py
+      mode: 0755
+
+  - name: installing pip
+    command: python3.6 /tmp/get-pip.py
+
+  - name: installing virtualenv
+    command: python3.6 -m pip install virtualenv
+
+  - name: apt install packages
+    apt:
+      name: "{{ item }}"
+      state: latest
+      # update_cache: yes
+    with_items:
+      # - python3-dev
+      # - python3-pip
+      - git
+      - default-jdk
+      - npm
+      - libfontconfig
+      - libffi-dev # for textacy
+      - build-essential # for dynet
+      - cmake # for dynet
+      - mercurial # for dynet
+
+    become: yes
+    become_user: root
+
+  - name: pip install packages
+    pip:
+      name: "{{ item }}"
+      state: latest
+      executable: pip3
+    become: yes
+    become_user: root
+    with_items:
+      - cython
+      - jupyter
+      - numpy
+      - pandas
+      - pretty-pandas
+      - pandas-profiling
+      - dora
+      - scikit-learn
+      - annoy
+      - imblearn
+      - pomegranate
+      - edward
+      - modal
+      - snorkel
+      - tdigest
+      - keras
+      - tensorflow
+      - darkon[tensorflow]
+      - http://download.pytorch.org/whl/cpu/torch-0.3.0.post4-cp36-cp36m-linux_x86_64.whl
+      - git+https://github.com/clab/dynet#egg=dynet
+      - torchvision
+      - bokeh
+      - matplotlib
+      - folium
+      - seaborn
+      - wordcloud
+      - colorcet
+      - gensim
+      - spacy
+      - textacy
+      - nltk
+      - textblob
+      - stop_words
+      - langid
+      - bs4
+      # - textract
+      - statsmodels
+      - pymc3
+      - prophet
+      - networkx
+      - tweepy
+      - sympy
+      - scikit-surprise
+      - pysocks # dependency for Spacy
+      - h5py # dependency for Keras
+      - lxml # dependency for Keras
+      - autograd
+      - sacred
+      # - /vagrant/files/toree-pip.tar.gz
+      - elasticsearch
+      - prospector
+      - optml
+      - ftfy
+      - beautifier
+      - scrubadub
+      - bandits
+      - datasketch
+
+  - name: download spark
+    get_url:
+      url: http://apache.mirrors.hoobly.com/spark/spark-2.2.1/spark-2.2.1-bin-hadoop2.7.tgz
+      dest: "{{ ansible_env.HOME }}/tmp_spark"
+
+  - name: extract spark
+    unarchive:
+      src: "{{ ansible_env.HOME }}/tmp_spark"
+      dest: "{{ ansible_env.HOME }}/"
+      mode: 0744
+      copy: no
+      owner: "{{ ansible_user }}"
+
+  - name: symlinking spark
+    file:
+      src: "{{ ansible_env.HOME }}/spark-2.2.1-bin-hadoop2.7"
+      dest: "{{ ansible_env.HOME }}/spark"
+      state: link
+
+  - name: download zeppelin
+    get_url:
+      url: http://mirrors.koehn.com/apache/zeppelin/zeppelin-0.7.3/zeppelin-0.7.3-bin-all.tgz
+      dest: "{{ ansible_env.HOME }}/tmp_zeppelin.tgz"
+
+  - name: extract zeppelin
+    unarchive:
+      src: "{{ ansible_env.HOME }}/tmp_zeppelin.tgz"
+      dest: "{{ ansible_env.HOME }}/"
+      mode: 0744
+      copy: no
+      owner: "{{ ansible_user }}"
+
+  - name: symlinking zeppelin
+    file:
+      src: "{{ ansible_env.HOME }}/zeppelin-0.7.3-bin-all"
+      dest: "{{ ansible_env.HOME }}/zeppelin"
+      state: link
+
+  - name: creating .profile
+    copy:
+      src: files/profile
+      dest: "{{ ansible_env.HOME }}/.profile"
+      mode: 0644
+
+  - name: create a directory for the jupyter notebook configuration
+    file:
+      path: "{{ ansible_env.HOME }}/.jupyter"
+      state: directory
+
+  - name: creating jupyter notebook configuration
+    copy:
+      src: files/jupyter_notebook_config.py
+      dest: "{{ ansible_env.HOME }}/.jupyter/jupyter_notebook_config.py"
+      mode: 0644
+
+  - name: create a directory for the jupyter theme
+    file:
+      path: "{{ ansible_env.HOME }}/.jupyter/custom"
+      state: directory
+
+  # - name: adding custom jupyter theme
+  #   copy:
+  #     src: files/seti-pink.css
+  #     dest: "{{ ansible_env.HOME }}/.jupyter/custom/custom.css"
+  #     mode: 0644
+
+  # - name: adding custom jupyter theme
+  #   become: yes
+  #   become_user: root
+  #   copy:
+  #     src: files/seti-pink.css
+  #     dest: "/usr/local/lib/python3.6/dist-packages/notebook/static/custom/custom.css"
+  #     mode: 0644
+
+  - name: create a directory for the keras configuration
+    file:
+      path: "{{ ansible_env.HOME }}/.keras"
+      state: directory
+
+  - name: configuring keras to use tensorflow backend
+    copy:
+      src: files/keras.json
+      dest: "{{ ansible_env.HOME }}/.keras/keras.json"
+      mode: 0644
+
+  - name: replacing zeppelin interpreter configuration
+    copy:
+      src: files/interpreter.json
+      dest: "{{ ansible_env.HOME }}/zeppelin/conf/interpreter.json"
+      mode: 0644
+
+  # - name: add a post-install python script (for bokeh sample data and NLTK packages)
+  #   copy:
+  #     src: files/download_packages.py
+  #     dest: "{{ ansible_env.HOME }}/download_packages.py"
+  #     mode: 0744
+  #
+  # - name: run post-install python script for bokeh and NLTK packages
+  #   command: "python3 {{ ansible_env.HOME }}/download_packages.py"
+  #
+  # - name: download spacy english package
+  #   command: "python3 -m spacy.en.download all"
+  #   become: yes
+  #   become_user: root
