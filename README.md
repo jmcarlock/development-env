@@ -77,7 +77,6 @@ $ bokeh serve path/to/application/
 | stop_words       | [stop_words](https://pypi.python.org/pypi/stop-words)                    | NLP                         |
 | langid           | [LangID](https://pypi.python.org/pypi/langid)                            | NLP                         |
 | bs4              | [Beautiful Soup](https://www.crummy.com/software/BeautifulSoup/bs4/doc/) | Text Extraction             |
-<!-- | textract         | [textract](https://textract.readthedocs.io/en/stable/)                   | Text Extraction             | -->
 | statsmodels      | [StatsModels](http://www.statsmodels.org/stable/index.html)              | Statistics                  |
 | pymc3            | [PyMC3](http://pymc-devs.github.io/pymc3/)                               | Bayesian Statistics         |
 | pystan           | [PyStan](http://pystan.readthedocs.io/)                                  | Bayesian Statistics         |
